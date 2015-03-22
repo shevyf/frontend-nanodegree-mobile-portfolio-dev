@@ -484,6 +484,16 @@ console.log("Time to generate pizzas on load: " + timeToGenerate[0].duration + "
 // Used by updatePositions() to decide when to log the average time per frame
 var frame = 0;
 
+//additional variables
+// Number of columns determined by window size. TODO: update on resize to add/remove pizzas
+// Columns must be an even number or the pizzas all line up
+var s = 256;
+var cols = Math.ceil(window.innerWidth/s);
+if (cols % 2) {cols += 1};
+
+// to hold array of elements for updatePositions so it won't have to find them again.
+var items; 
+
 // Logs the average amount of time per 10 frames needed to move the sliding background pizzas on scroll.
 function logAverageFrame(times) {   // times is the array of User Timing measurements from updatePositions()
   var numberOfEntries = times.length;
@@ -501,13 +511,14 @@ function logAverageFrame(times) {   // times is the array of User Timing measure
 function updatePositions() {
   frame++;
   window.performance.mark("mark_start_frame");
-
-  var items = document.querySelectorAll('.mover');
+  var bodyTop = document.body.scrollTop / 1250;
+  
   for (var i = 0; i < items.length; i++) {
-    var phase = Math.sin((document.body.scrollTop / 1250) + (i % 5));
-    items[i].style.left = items[i].basicLeft + 100 * phase + 'px';
+    var phase = Math.sin(bodyTop + (i % 5));
+    items[i].style.left = ((i % cols) * s) + 100 * phase + 'px';
+    //console.log(phase, bodyTop, i % 5)
   }
-
+    //console.log(phase, document.body.scrollTop / 1250 ) 
   // User Timing API to the rescue again. Seriously, it's worth learning.
   // Super easy to create custom metrics.
   window.performance.mark("mark_end_frame");
@@ -522,18 +533,26 @@ function updatePositions() {
 window.addEventListener('scroll', updatePositions);
 
 // Generates the sliding pizzas when the page loads.
+// TODO: Reduce number of pizzas generated, we onl see ~32 at a time on a desktop, fewer on a phone.
+// TODO: add pizzas to an array instead of needing to find them again everytime updatePositions is called?
 document.addEventListener('DOMContentLoaded', function() {
-  var cols = 8;
-  var s = 256;
-  for (var i = 0; i < 200; i++) {
+
+  var rows = Math.ceil(window.innerHeight/256);
+  var totalPizzas = cols * rows;
+  console.log(window.innerWidth, window.innerHeight, cols, rows, "Total Pizzas: " + totalPizzas);
+  
+  for (var i = 0; i < totalPizzas; i++) {
     var elem = document.createElement('img');
     elem.className = 'mover';
-    elem.src = "images/pizza.png";
+    elem.src = "images/pizza-small.png";
+    //elem.height = "100";
+    //elem.width = "73";
     elem.style.height = "100px";
     elem.style.width = "73.333px";
     elem.basicLeft = (i % cols) * s;
     elem.style.top = (Math.floor(i / cols) * s) + 'px';
     document.querySelector("#movingPizzas1").appendChild(elem);
+    items = document.getElementsByClassName('mover');
   }
   updatePositions();
 });
