@@ -451,6 +451,7 @@ var resizePizzas = function(size) {
   // Iterates through pizza elements on the page and changes their widths
   function changePizzaSizes(size) {
     
+    // Select pizza containers just once instead of at every step.
     var pizzaBoxes = document.getElementsByClassName('randomPizzaContainer');
     // dx value is the same for all pizzas, so only need to calculate it once using the first pizza.
     var dx = determineDx(pizzaBoxes[0], size);
@@ -493,7 +494,7 @@ var frame = 0;
 // Columns must be an even number or the pizzas all line up
 var s = 256;
 var cols = Math.ceil(window.innerWidth/s);
-if (cols % 2) {cols += 1};
+if (cols % 2) {cols += 1;}
 
 // to hold array of elements for updatePositions so it won't have to find them again.
 var items; 
@@ -520,9 +521,8 @@ function updatePositions() {
   for (var i = 0; i < items.length; i++) {
     var phase = Math.sin(bodyTop + (i % 5));
     items[i].style.left = ((i % cols) * s) + 100 * phase + 'px';
-    //console.log(phase, bodyTop, i % 5)
   }
-    //console.log(phase, document.body.scrollTop / 1250 ) 
+
   // User Timing API to the rescue again. Seriously, it's worth learning.
   // Super easy to create custom metrics.
   window.performance.mark("mark_end_frame");
@@ -537,8 +537,6 @@ function updatePositions() {
 window.addEventListener('scroll', updatePositions);
 
 // Generates the sliding pizzas when the page loads.
-// TODO: Reduce number of pizzas generated, we onl see ~32 at a time on a desktop, fewer on a phone.
-// TODO: add pizzas to an array instead of needing to find them again everytime updatePositions is called?
 document.addEventListener('DOMContentLoaded', function() {
 
   var rows = Math.ceil(window.innerHeight/256);
@@ -549,8 +547,6 @@ document.addEventListener('DOMContentLoaded', function() {
     var elem = document.createElement('img');
     elem.className = 'mover';
     elem.src = "images/pizza-small.png";
-    //elem.height = "100";
-    //elem.width = "73";
     elem.style.height = "100px";
     elem.style.width = "73.333px";
     elem.basicLeft = (i % cols) * s;
