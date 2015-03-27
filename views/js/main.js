@@ -451,9 +451,10 @@ var resizePizzas = function(size) {
   // Iterates through pizza elements on the page and changes their widths
   function changePizzaSizes(size) {
     
-    // Select pizza containers just once instead of at every step.
+    // SHEVY: Select pizza containers just once instead of at every step.
     var pizzaBoxes = document.getElementsByClassName('randomPizzaContainer');
-    // dx value is the same for all pizzas, so only need to calculate it once using the first pizza.
+    
+    // SHEVY: dx value is the same for all pizzas, so only need to calculate it once using the first pizza.
     var dx = determineDx(pizzaBoxes[0], size);
     var newwidth = (pizzaBoxes[0].offsetWidth + dx) + 'px';
     
@@ -489,14 +490,15 @@ console.log("Time to generate pizzas on load: " + timeToGenerate[0].duration + "
 // Used by updatePositions() to decide when to log the average time per frame
 var frame = 0;
 
-//additional variables
-// Number of columns determined by window size. TODO: update on resize to add/remove pizzas
-// Columns must be an even number or the pizzas all line up
+// SHEVY: additional unchanging variables removed from updatePositions
 var s = 256;
 var cols = Math.ceil(window.innerWidth/s);
+
+// SHEVY: Number of columns determined by window size. TODO: update on resize to add/remove pizzas
+// Columns must be an even number or the pizzas all line up and don't look at good.
 if (cols % 2) {cols += 1;}
 
-// to hold array of elements for updatePositions so it won't have to find them again.
+// SHEVY: to hold array of elements for updatePositions so it won't have to find them again in each loop.
 var items; 
 
 // Logs the average amount of time per 10 frames needed to move the sliding background pizzas on scroll.
@@ -516,11 +518,11 @@ function logAverageFrame(times) {   // times is the array of User Timing measure
 function updatePositions() {
   frame++;
   window.performance.mark("mark_start_frame");
-  var bodyTop = document.body.scrollTop / 1250;
+  var bodyTop = document.body.scrollTop / 1250; // SHEVY: calculation removed from loop
   
   for (var i = 0; i < items.length; i++) {
     var phase = Math.sin(bodyTop + (i % 5));
-    items[i].style.left = ((i % cols) * s) + 100 * phase + 'px';
+    items[i].style.left = items[i].basicLeft + 100 * phase + 'px';
   }
 
   // User Timing API to the rescue again. Seriously, it's worth learning.
@@ -538,15 +540,17 @@ window.addEventListener('scroll', updatePositions);
 
 // Generates the sliding pizzas when the page loads.
 document.addEventListener('DOMContentLoaded', function() {
-
+  
+  // SHEVY: Calculate the total number of pizzas on load
   var rows = Math.ceil(window.innerHeight/256);
   var totalPizzas = cols * rows;
   console.log(window.innerWidth, window.innerHeight, cols, rows, "Total Pizzas: " + totalPizzas);
   
+  //SHEVY: uncertain if using a smaller pizza image helps reduce resizing time, or just adds another request
   for (var i = 0; i < totalPizzas; i++) {
     var elem = document.createElement('img');
     elem.className = 'mover';
-    elem.src = "images/pizza-small.png";
+    elem.src = "images/pizza-small.png"; 
     elem.style.height = "100px";
     elem.style.width = "73.333px";
     elem.basicLeft = (i % cols) * s;

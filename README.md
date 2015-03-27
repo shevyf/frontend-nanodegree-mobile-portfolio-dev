@@ -1,73 +1,36 @@
 ## Website Performance Optimization portfolio project
 
-Your challenge, if you wish to accept it (and we sure hope you will), is to optimize this online portfolio for speed! In particular, optimize the critical rendering path and make this page render as quickly as possible by applying the techniques you've picked up in the [Critical Rendering Path course](https://www.udacity.com/course/ud884).
-
-To get started, check out the repository, inspect the code,
+My challenge, which I accepted, was to optimize this online portfolio for speed! I've done so to the best of my ability, largely by delaying the loading of render-blocking js and css, and streamlining the code to do calculations as few times as possible. Check out perfmatters.js and views/main.js, both of which have comments in them to explain my changes.
 
 ### Getting started
 
+To make this site easier to look at, I've deployed it to an AWS instance which you can reach by going to [pixiespace.com/portfolio/](http://pixiespace.com/portfolio/). From there, you can click all the links and look at all the pages. This repository contains the 'beautified' code for readability. To look at the minified code, check out my other repo, [frontend-nanodegree-mobile-portfolio](https://github.com/shevyf/frontend-nanodegree-mobile-portfolio)
+
 ####Part 1: Optimize PageSpeed Insights score for index.html
 
-Some useful tips to help you get started:
+This page was slowed down by having unnecessary js and css load which held up rendering the page. The css required for above-the-fold rendering was moved into style tags at the beginning, and the rest was added to the page after it rendered by a section of javascript added at the end of the body section. The print-specific css was marked as media="print" to prevent the page from waiting to load it before constructing the render tree.
 
-1. Check out the repository
-1. To inspect the site on your phone, you can run a local server
-
-  ```bash
-  $> cd /path/to/your-project-folder
-  $> python -m SimpleHTTPServer 8080
-  ```
-
-1. Open a browser and visit localhost:8080
-1. Download and install [ngrok](https://ngrok.com/) to make your local server accessible remotely.
-
-  ``` bash
-  $> cd /path/to/your-project-folder
-  $> ngrok 8080
-  ```
-
-1. Copy the public URL ngrok gives you and try running it through PageSpeed Insights! Optional: [More on integrating ngrok, Grunt and PageSpeed.](http://www.jamescryer.com/2014/06/12/grunt-pagespeed-and-ngrok-locally-testing/)
-
-Profile, optimize, measure... and then lather, rinse, and repeat. Good luck!
+The google analytics script and the perfmatters don't affect the page at all, so they were marked as async.
 
 ####Part 2: Optimize Frames per Second in pizza.html
 
-To optimize views/pizza.html, you will need to modify views/js/main.js until your frames per second rate is 60 fps or higher. You will find instructive comments in main.js. 
+This was pretty challenging and I'm still uncertain whether I've reached the target.
 
-You might find the FPS Counter/HUD Display useful in Chrome developer tools described here: [Chrome Dev Tools tips-and-tricks](https://developer.chrome.com/devtools/docs/tips-and-tricks).
+Most of the issues were around calculations which were repeated over and over in for-loops which actually only needed to be done once. For example, instead of looking up getElementsById('.movers') in every update loop, I did that once and saved the result to an array which could be looped over instead. Again, check the code in the dev repo for more information.
 
-### Optimization Tips and Tricks
-* [Optimizing Performance](https://developers.google.com/web/fundamentals/performance/ "web performance")
-* [Analyzing the Critical Rendering Path](https://developers.google.com/web/fundamentals/performance/critical-rendering-path/analyzing-crp.html "analyzing crp")
-* [Optimizing the Critical Rendering Path](https://developers.google.com/web/fundamentals/performance/critical-rendering-path/optimizing-critical-rendering-path.html "optimize the crp!")
-* [Avoiding Rendering Blocking CSS](https://developers.google.com/web/fundamentals/performance/critical-rendering-path/render-blocking-css.html "render blocking css")
-* [Optimizing JavaScript](https://developers.google.com/web/fundamentals/performance/critical-rendering-path/adding-interactivity-with-javascript.html "javascript")
-* [Measuring with Navigation Timing](https://developers.google.com/web/fundamentals/performance/critical-rendering-path/measure-crp.html "nav timing api"). We didn't cover the Navigation Timing API in the first two lessons but it's an incredibly useful tool for automated page profiling. I highly recommend reading.
-* <a href="https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/eliminate-downloads.html">The fewer the downloads, the better</a>
-* <a href="https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/optimize-encoding-and-transfer.html">Reduce the size of text</a>
-* <a href="https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/image-optimization.html">Optimize images</a>
-* <a href="https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching.html">HTTP caching</a>
+I also resized the pizza image for the background rather than have it be resized in the browser. This does mean an additional request, but I hoped it would cut down on the paint times on each frame. Alas, that doesn't seem to have worked, as the whole screen is being repainted for each frame anyway. I attempted to use the css transform style, but this seemed to save me no rendering or painting time and instead increased my script time massively. 
 
-### Customization with Bootstrap
-The portfolio was built on Twitter's <a href="http://getbootstrap.com/">Bootstrap</a> framework. All custom styles are in `dist/css/portfolio.css` in the portfolio repo.
+Overall, the average frame rate on my home PC is under 60fps but on slower machines like my ancient work laptop, it's less consistent. Let me know what you think.
 
-* <a href="http://getbootstrap.com/css/">Bootstrap's CSS Classes</a>
-* <a href="http://getbootstrap.com/components/">Bootstrap's Components</a>
+####Part 3: Using NodeJS and Grunt to automate tasks
 
-### Sample Portfolios
+I have set up Grunt to run in the folder which contains my portfolio and portfoliodev folders which I have been working from. In order to let you look how I've set that up, I've copied Gruntfile.js and packages.json into my repo, however running grunt from *within* the repo will not work correctly at this time.
 
-Feeling uninspired by the portfolio? Here's a list of cool portfolios I found after a few minutes of Googling.
+Grunt has automated for me:
 
-* <a href="http://www.reddit.com/r/webdev/comments/280qkr/would_anybody_like_to_post_their_portfolio_site/">A great discussion about portfolios on reddit</a>
-* <a href="http://ianlunn.co.uk/">http://ianlunn.co.uk/</a>
-* <a href="http://www.adhamdannaway.com/portfolio">http://www.adhamdannaway.com/portfolio</a>
-* <a href="http://www.timboelaars.nl/">http://www.timboelaars.nl/</a>
-* <a href="http://futoryan.prosite.com/">http://futoryan.prosite.com/</a>
-* <a href="http://playonpixels.prosite.com/21591/projects">http://playonpixels.prosite.com/21591/projects</a>
-* <a href="http://colintrenter.prosite.com/">http://colintrenter.prosite.com/</a>
-* <a href="http://calebmorris.prosite.com/">http://calebmorris.prosite.com/</a>
-* <a href="http://www.cullywright.com/">http://www.cullywright.com/</a>
-* <a href="http://yourjustlucky.com/">http://yourjustlucky.com/</a>
-* <a href="http://nicoledominguez.com/portfolio/">http://nicoledominguez.com/portfolio/</a>
-* <a href="http://www.roxannecook.com/">http://www.roxannecook.com/</a>
-* <a href="http://www.84colors.com/portfolio.html">http://www.84colors.com/portfolio.html</a>
+- linting my JS and CSS
+- minifying JS, CSS and HTML
+- Compressing images
+- Copying production files to my production folder
+
+I would still like to achieve some degree of git automation through grunt, for example pulling or pushing both repos at the same time.
