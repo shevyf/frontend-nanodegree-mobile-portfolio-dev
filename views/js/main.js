@@ -474,9 +474,10 @@ var resizePizzas = function(size) {
 
 window.performance.mark("mark_start_generating"); // collect timing data
 
+// SHEVY: this step removed from loop below (as suggested in feedback on first submission)
+var pizzasDiv = document.getElementById("randomPizzas");
 // This for-loop actually creates and appends all of the pizzas when the page loads
 for (var i = 2; i < 100; i++) {
-  var pizzasDiv = document.getElementById("randomPizzas");
   pizzasDiv.appendChild(pizzaElementGenerator(i));
 }
 
@@ -492,11 +493,13 @@ var frame = 0;
 
 // SHEVY: additional unchanging variables removed from updatePositions
 var s = 256;
-var cols = Math.ceil(window.innerWidth/s);
+var cols;
+var rows;
+var totalPizzas;
 
 // SHEVY: Number of columns determined by window size. TODO: update on resize to add/remove pizzas
 // Columns must be an even number or the pizzas all line up and don't look at good.
-if (cols % 2) {cols += 1;}
+
 
 // SHEVY: to hold array of elements for updatePositions so it won't have to find them again in each loop.
 var items; 
@@ -519,9 +522,12 @@ function updatePositions() {
   frame++;
   window.performance.mark("mark_start_frame");
   var bodyTop = document.body.scrollTop / 1250; // SHEVY: calculation removed from loop
-  
+  var sinValues = [];
+  for (var h = 0; h < 5; h++) {
+    sinValues.push(Math.sin(bodyTop + h));
+  }
   for (var i = 0; i < items.length; i++) {
-    var phase = Math.sin(bodyTop + (i % 5));
+    var phase = sinValues[i % 5];
     items[i].style.left = items[i].basicLeft + 100 * phase + 'px';
   }
 
@@ -538,15 +544,13 @@ function updatePositions() {
 // runs updatePositions on scroll
 window.addEventListener('scroll', updatePositions);
 
-// Generates the sliding pizzas when the page loads.
-document.addEventListener('DOMContentLoaded', function() {
-  
-  // SHEVY: Calculate the total number of pizzas on load
-  var rows = Math.ceil(window.innerHeight/256);
-  var totalPizzas = cols * rows;
-  console.log(window.innerWidth, window.innerHeight, cols, rows, "Total Pizzas: " + totalPizzas);
-  
-  //SHEVY: uncertain if using a smaller pizza image helps reduce resizing time, or just adds another request
+/* SHEVY: in order to recheck for number of pizzas when resizing, it is appropriate to first of all compare the old size to the new and see if the actual number changes. Only then is it necessary to run the function to re-create the pizzas.
+To do this, need extra variables to hold the current rows/columns. 
+TODO: Most efficient way is to check totalPizzas value and only draw or remove extras. But I'm getting close to the deadline
+*/
+
+//SHEVY: removed the drawing of the pizzas form the DOMContentLoaded event so I can reuse it in the resize event.
+var drawPizzas = function() {
   for (var i = 0; i < totalPizzas; i++) {
     var elem = document.createElement('img');
     elem.className = 'mover';
@@ -559,4 +563,33 @@ document.addEventListener('DOMContentLoaded', function() {
     items = document.getElementsByClassName('mover');
   }
   updatePositions();
+};
+
+// Generates the sliding pizzas when the page loads.
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // SHEVY: Calculate the total number of pizzas on load
+  cols = Math.ceil(window.innerWidth/s);
+  if (cols % 2) {cols += 1;}
+  rows = Math.ceil(window.innerHeight/256);
+  totalPizzas = cols * rows;
+  console.log(window.innerWidth, window.innerHeight, cols, rows, "Total Pizzas: " + totalPizzas);
+
+  drawPizzas();
+});
+
+/* SHEVY: event listener compares new column and row values and if necessary recalculates pizzas. However, I'm not 100% happy with long this takes; removing and replacing all of the pizzas isn't a very efficient way of doing things */
+window.addEventListener('resize', function() {
+  
+  var newCols = Math.ceil(window.innerWidth/s);
+  if (newCols % 2) {newCols += 1;} 
+  var newRows = Math.ceil(window.innerHeight/256);
+  if (newCols !== cols || newRows !== rows) {
+    cols = newCols;
+    rows = newRows;
+    totalPizzas = cols * rows;
+    while (items.length > 0) {items[0].remove();}
+    drawPizzas();
+    console.log(window.innerWidth, window.innerHeight, cols, rows, "Total Pizzas: " + totalPizzas);
+  }
 });
